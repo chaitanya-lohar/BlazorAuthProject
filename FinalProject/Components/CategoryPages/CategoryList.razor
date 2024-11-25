@@ -1,0 +1,71 @@
+﻿
+
+@page "/category"
+
+@inject ICategoryRepository categoryRepository
+
+@if (IsProcessing)
+{
+    <div class="position-absolute d-flex flex-column align-items-center justify-content-center bg-white"
+         style="top: 0; left: 250px; width: calc(100% - 250px); height: 100%;">
+        <img src="/Images/Loader.gif" style="width:100px; height:100px;" alt="Loading..." />
+    </div>
+}
+else {
+    <div class="card shadow border-0">
+        <div class="card-header bg-black bg-gradient ml-0">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h2 class="text-white py-2">Category List</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-3">
+            <div class="row pb-3">
+                <div class="col-12 text-end">
+                    <a href="category/create" class="btn btn-secondary py-2" style="width:180px"><i class="bi bi-file-plus"></i> Add New Category</a>
+                </div>
+            </div>
+        </div>
+        @if (Categories.Any()) { 
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th style="width:10%;">S.No.</th>
+                        <th style="width:60%;">Name</th>
+                        <th style="width:30%;" colspan="2"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cat in Categories) { 
+                        <tr>
+                            <td>@index</td>
+                            <td>@cat.Name</td>
+                            <td  style="text-align:right;"><a href="category/update/@cat.Id" class="btn btn-primary py-2" style="margin-right:0.5rem;"><i class="bi bi-pencil-square"></i> Update</a></td>
+                            <td style="text-align:right;"><a href="category/delete/@cat.Id" class="btn btn-danger py-2" style="margin-right:0.5rem;"><i class="bi bi-trash3"></i> Delete</a></td>
+                        </tr>
+                        index++;
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}
+
+
+@code{
+    public int index { get; set; } = 1;
+    public bool IsProcessing { get; set; } = false;
+    private IEnumerable<Category> Categories { get; set; } = new List<Category>(); 
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsProcessing = true;
+        // await Task.Yield();
+        await LoadingCategory();
+        IsProcessing = false;
+    }
+    private async Task LoadingCategory() {
+        Categories = await categoryRepository.GetAllCategoriesAsync();
+    }
+}
