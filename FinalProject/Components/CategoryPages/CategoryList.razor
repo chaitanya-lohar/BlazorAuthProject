@@ -1,18 +1,19 @@
-﻿
-
-@page "/category"
+﻿@page "/category"
 
 @inject ICategoryRepository categoryRepository
+@inject IJSRuntime js
 
+<ConfirmationComponent OnDeleteConfirmationClicked="DeleteConfirmationClicked"></ConfirmationComponent>
 @if (IsProcessing)
 {
-    <div class="position-absolute d-flex flex-column align-items-center justify-content-center bg-white"
-         style="top: 0; left: 250px; width: calc(100% - 250px); height: 100%;">
+    <div class="position-absolute d-flex flex-column align-items-center justify-content-center bg-white mt-3"
+    style="top: 0; left: 250px; width: calc(100% - 250px); height: 100%;">
         <img src="/Images/Loader.gif" style="width:100px; height:100px;" alt="Loading..." />
     </div>
 }
-else {
-    <div class="card shadow border-0">
+else
+{
+    <div class="card shadow border-0 mt-3">
         <div class="card-header bg-black bg-gradient ml-0">
             <div class="row">
                 <div class="col-md-12 text-center">
@@ -27,7 +28,8 @@ else {
                 </div>
             </div>
         </div>
-        @if (Categories.Any()) { 
+        @if (Categories.Any())
+        {
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
@@ -37,14 +39,18 @@ else {
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var cat in Categories) { 
+                @{
+                int Index = 1;
+                }
+                    @foreach (var cat in Categories)
+                    { 
                         <tr>
-                            <td>@index</td>
+                            <td>@Index</td>
                             <td>@cat.Name</td>
-                            <td  style="text-align:right;"><a href="category/update/@cat.Id" class="btn btn-primary py-2" style="margin-right:0.5rem;"><i class="bi bi-pencil-square"></i> Update</a></td>
-                            <td style="text-align:right;"><a href="category/delete/@cat.Id" class="btn btn-danger py-2" style="margin-right:0.5rem;"><i class="bi bi-trash3"></i> Delete</a></td>
+                            <td style="text-align:right;"><a href="category/update/@cat.Id" class="btn btn-primary py-2" style="margin-right:0.5rem;"><i class="bi bi-pencil-square"></i> Update</a></td>
+                            <td style="text-align:right;"><button class="btn btn-danger py-2" style="margin-right:0.5rem;" @onclick="()=>HandleDelete(cat.Id)"><i class="bi bi-trash3"></i> Delete</button></td>
                         </tr>
-                        index++;
+                        Index++;
                     }
                 </tbody>
             </table>
@@ -53,10 +59,10 @@ else {
 }
 
 
-@code{
-    public int index { get; set; } = 1;
-    public bool IsProcessing { get; set; } = false;
-    private IEnumerable<Category> Categories { get; set; } = new List<Category>(); 
+@code {
+    private int DeleteCategoryId { get; set; } = 0;
+    private bool IsProcessing { get; set; } = false;
+    private IEnumerable<Category> Categories { get; set; } = new List<Category>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,7 +71,40 @@ else {
         await LoadingCategory();
         IsProcessing = false;
     }
-    private async Task LoadingCategory() {
+    private async Task LoadingCategory()
+    {
         Categories = await categoryRepository.GetAllCategoriesAsync();
     }
+
+    private async Task HandleDelete(int id)
+    {
+        DeleteCategoryId = id;
+        await js.InvokeVoidAsync("showConfirmation");
+    }
+
+    private async Task DeleteConfirmationClicked(bool isConfirmed)
+    {
+        IsProcessing = true;
+        if (isConfirmed && DeleteCategoryId > 0)
+        {
+            var result = await categoryRepository.DeleteAsync(DeleteCategoryId);
+            if (result)
+            {
+                await js.ToastrSuccess("Category has been deleted successfully!");
+            }
+            else
+            {
+                await js.ToastrError("There is any error in proceessing the request!");
+            }
+            await LoadingCategory();
+
+        }
+        else {
+            await js.InvokeVoidAsync("hideConfirmation");
+        }
+        DeleteCategoryId = 0;
+        IsProcessing = false;
+        await js.InvokeVoidAsync("hideConfirmation");
+    }
+
 }

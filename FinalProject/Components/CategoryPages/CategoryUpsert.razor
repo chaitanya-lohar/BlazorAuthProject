@@ -32,12 +32,12 @@ else
                         <ValidationMessage For="@(()=>category.Name)" />
                     </div>
                     <div>
+                        <a class="btn btn-secondary m-1" @onclick="BackToGrid" disabled="@IsProcessing"><i class="bi bi-arrow-left-circle"></i> Back</a>
                         @if (id > 0) {
-                            <button type="submit" class="btn btn-success m-1" disabled="@IsProcessing"><i class="bi bi-pencil-square"></i> Update</button>
+                            <button type="submit" class="btn btn-primary m-1" disabled="@IsProcessing"><i class="bi bi-pencil-square"></i> Update</button>
                         }else{
                             <button type="submit" class="btn btn-success m-1" disabled="@IsProcessing"><i class="bi bi-save"></i> Save</button>
                         }
-                        <a class="btn btn-secondary m-1" @onclick="BackToGrid" disabled="@IsProcessing"><i class="bi bi-arrow-left-circle"></i> Back</a>
                     </div>
                 </div>
             </EditForm>
